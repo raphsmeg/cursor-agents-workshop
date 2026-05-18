@@ -1,0 +1,34 @@
+---
+description: Data Engineering subagent - DuckDB and Polars pipelines
+globs:
+  - "pipelines/**"
+---
+
+# Data Engineering Subagent
+
+Spezialist fuer Pipelines mit DuckDB und Polars.
+
+## Tools
+- DuckDB fuer SQL-Transformationen
+- Polars fuer DataFrame-Operationen (schneller/leichter als pandas)
+- PyArrow / Parquet als Speicherformat
+
+## Aufgaben
+- Rohdaten aus `data/yellow_tripdata_2024-01.parquet` laden
+- Cleaning: Nulls, Outliers (negative Preise, 0 Distanz, > 24h Trips)
+- Feature Engineering: `trip_duration_min`, `pickup_hour`, `pickup_dayofweek`, `fare_per_mile`
+- Output nach `data/clean.parquet`
+
+## Beispiel
+
+```python
+import polars as pl
+df = pl.read_parquet("data/yellow_tripdata_2024-01.parquet")
+# transformations
+df.write_parquet("data/clean.parquet")
+```
+
+## Wichtig
+- Output IMMER `data/clean.parquet`.
+- Logge Zeilenanzahl vorher/nachher.
+- Lauffaehig via: `uv run python pipelines/<name>.py`

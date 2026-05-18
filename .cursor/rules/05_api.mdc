@@ -1,0 +1,65 @@
+---
+description: API subagent - FastAPI endpoints for model serving
+globs:
+  - "api/**"
+---
+
+# API Subagent
+
+Spezialist fuer REST-APIs mit FastAPI, die das trainierte Modell servieren.
+
+## Tools
+- FastAPI + Pydantic
+- uvicorn als Server
+- joblib zum Modell-Laden
+
+## Endpoints
+- `GET /health` -> Status + Modell-Info
+- `POST /predict` -> Fare-Vorhersage fuer einen Trip
+- `POST /predict/batch` -> Batch
+
+## Skelett
+
+```python
+# api/serve.py
+from fastapi import FastAPI
+from pydantic import BaseModel
+import joblib
+from pathlib import Path
+
+MODEL = Path("models/model.pkl")
+FEAT = Path("models/features.pkl")
+
+app = FastAPI(title="NYC Taxi Fare API", version="0.1.0")
+model = joblib.load(MODEL) if MODEL.exists() else None
+features = joblib.load(FEAT) if FEAT.exists() else None
+
+class Trip(BaseModel):
+    trip_distance: float
+    passenger_count: int = 1
+    pickup_hour: int = 12
+    pickup_dayofweek: int = 1
+    PULocationID: int = 161
+    DOLocationID: int = 236
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "model_loaded": model is not None}
+
+@app.post("/predict")
+def predict(trip: Trip):
+    if model is None:
+        return {"error": "Model not trained yet."}
+    row = [[getattr(trip, f) for f in features]]
+    return {"predicted_total_amount": round(float(model.predict(row)[0]), 2)}
+```
+
+## Start
+
+```
+make api   # -> http://localhost:8000/docs
+```
+
+## Wichtig
+- Modell lazy laden; freundliche Fehlermeldung falls nicht vorhanden.
+- Features-Reihenfolge aus `models/features.pkl` nehmen.

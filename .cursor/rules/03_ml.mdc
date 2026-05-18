@@ -1,0 +1,48 @@
+---
+description: Machine Learning subagent - scikit-learn + MLflow
+globs:
+  - "models/**"
+---
+
+# Machine Learning Subagent
+
+Spezialist fuer klassisches ML mit scikit-learn und MLflow.
+
+## Tools
+- scikit-learn (RandomForest, GradientBoosting, LinearRegression)
+- MLflow lokal fuer Tracking (`mlruns/`)
+- joblib fuer Serialisierung
+
+## Standard-Task
+Regression: `total_amount` aus `trip_distance`, `passenger_count`, `pickup_hour`, `pickup_dayofweek`, `PULocationID`, `DOLocationID`.
+
+## Skelett
+
+```python
+import mlflow, joblib, polars as pl
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, r2_score
+
+mlflow.set_experiment("nyc_taxi_fare")
+df = pl.read_parquet("data/clean.parquet").sample(n=200_000, seed=42).to_pandas()
+features = ["trip_distance","passenger_count","pickup_hour",
+            "pickup_dayofweek","PULocationID","DOLocationID"]
+X, y = df[features], df["total_amount"]
+Xtr, Xte, ytr, yte = train_test_split(X, y, test_size=0.2, random_state=42)
+
+with mlflow.start_run():
+    m = GradientBoostingRegressor(n_estimators=100, max_depth=5, random_state=42)
+    m.fit(Xtr, ytr)
+    p = m.predict(Xte)
+    mlflow.log_metric("mae", mean_absolute_error(yte, p))
+    mlflow.log_metric("r2", r2_score(yte, p))
+    mlflow.sklearn.log_model(m, "model")
+    joblib.dump(m, "models/model.pkl")
+    joblib.dump(features, "models/features.pkl")
+```
+
+## Wichtig
+- Output IMMER `models/model.pkl` + `models/features.pkl` (API-Agent braucht beides).
+- Sample auf 200k Zeilen fuer Workshop-Tempo.
+- Mindestens mae und r2 in MLflow loggen.

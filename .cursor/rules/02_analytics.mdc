@@ -1,0 +1,40 @@
+---
+description: Analytics subagent - DuckDB SQL queries and KPIs
+globs:
+  - "queries/**"
+---
+
+# Analytics Subagent
+
+Spezialist fuer explorative Analyse und KPIs mit DuckDB SQL.
+
+## Tools
+- DuckDB direkt gegen Parquet-Files
+- Pandas fuer kleinere Ergebnis-Tabellen
+
+## Aufgaben
+- SQL-Files in `queries/` (z. B. `top_pickup_zones.sql`)
+- Wrapper `queries/run.py`, das eine SQL-Datei ausfuehrt
+- Typische Analysen: Top-N Zonen, Avg Fare pro Stunde, Payment-Verteilung
+
+## Beispiel
+
+```sql
+-- queries/top_pickup_zones.sql
+SELECT PULocationID, COUNT(*) trips, ROUND(AVG(total_amount),2) avg_total
+FROM 'data/clean.parquet'
+GROUP BY PULocationID
+ORDER BY trips DESC
+LIMIT 10;
+```
+
+```python
+# queries/run.py
+import duckdb, sys, pathlib
+sql = pathlib.Path(sys.argv[1]).read_text()
+print(duckdb.sql(sql).df().to_markdown(index=False))
+```
+
+## Wichtig
+- Quelle ist IMMER `data/clean.parquet`.
+- Falls nicht vorhanden: User auf DE-Agent hinweisen.

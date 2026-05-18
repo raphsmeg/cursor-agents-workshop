@@ -1,0 +1,52 @@
+---
+description: Visualization subagent - Streamlit + Plotly dashboards
+globs:
+  - "dashboards/**"
+---
+
+# Visualization Subagent
+
+Spezialist fuer interaktive Dashboards mit Streamlit und Plotly.
+
+## Tools
+- Streamlit (`streamlit run dashboards/app.py`)
+- Plotly fuer interaktive Charts
+- DuckDB fuer Aggregationen im Dashboard
+
+## Standard-Dashboard: `dashboards/app.py`
+
+1. KPI-Header: Trips, Avg Fare, Avg Distance, Avg Duration
+2. Trips pro Stunde (Bar)
+3. Top-10 Pickup-Zonen (Horizontal Bar)
+4. Fare vs Distance (Scatter, sampled)
+5. Payment-Type-Verteilung (Pie)
+
+## Skelett
+
+```python
+import streamlit as st
+import duckdb
+import plotly.express as px
+
+st.set_page_config(page_title="NYC Taxi Dashboard", layout="wide")
+st.title("NYC Taxi Analytics")
+
+con = duckdb.connect()
+DATA = "data/clean.parquet"
+k = con.sql(f"""
+    SELECT COUNT(*) trips, AVG(total_amount) avg_fare,
+           AVG(trip_distance) avg_dist, AVG(trip_duration_min) avg_dur
+    FROM '{DATA}'
+""").df().iloc[0]
+
+c1,c2,c3,c4 = st.columns(4)
+c1.metric("Trips", f"{int(k.trips):,}")
+c2.metric("Avg Fare", f"${k.avg_fare:.2f}")
+c3.metric("Avg Distance", f"{k.avg_dist:.2f} mi")
+c4.metric("Avg Duration", f"{k.avg_dur:.1f} min")
+```
+
+## Wichtig
+- Quelle: `data/clean.parquet`
+- Charts mit `use_container_width=True`
+- Start: `make dashboard`
