@@ -76,7 +76,7 @@ switch ($Command.ToLower()) {
     "api" {
         Test-Uv
         Write-Host "==> Starte FastAPI auf http://localhost:8000/docs ..." -ForegroundColor Cyan
-        uv run uvicorn api.serve:app --reload --host 0.0.0.0 --port 8000
+        uv run python -m uvicorn api.serve:app --reload --host 0.0.0.0 --port 8000
     }
 
     "dashboard" {
