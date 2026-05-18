@@ -58,7 +58,7 @@ switch ($Command.ToLower()) {
         Test-Uv
         Write-Host "==> Starte MLflow UI im Hintergrund (http://localhost:5000)..." -ForegroundColor Cyan
         Start-Process -WindowStyle Hidden -FilePath "uv" `
-            -ArgumentList "run", "mlflow", "ui", "--host", "0.0.0.0", "--port", "5000"
+            -ArgumentList "run", "python", "-m", "mlflow", "ui", "--host", "0.0.0.0", "--port", "5000"
         Start-Sleep -Seconds 2
 
         if (Get-Command cursor -ErrorAction SilentlyContinue) {
@@ -82,13 +82,13 @@ switch ($Command.ToLower()) {
     "dashboard" {
         Test-Uv
         Write-Host "==> Starte Streamlit auf http://localhost:8501 ..." -ForegroundColor Cyan
-        uv run streamlit run dashboards/app.py
+        uv run python -m streamlit run dashboards/app.py
     }
 
     "mlflow" {
         Test-Uv
         Write-Host "==> Starte MLflow UI auf http://localhost:5000 ..." -ForegroundColor Cyan
-        uv run mlflow ui --host 0.0.0.0 --port 5000
+        uv run python -m mlflow ui --host 0.0.0.0 --port 5000
     }
 
     "clean" {
